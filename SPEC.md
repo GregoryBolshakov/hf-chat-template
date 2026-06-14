@@ -559,7 +559,14 @@ design risk.
   `tool_calls`, content parts, `extra`) stay `serde_json::Value` rather than fully-typed
   `Tool`/`ToolCall`/`Document` structs — open-ended shapes that typing would only constrain
   wrongly; feature-gating of the `serde_json::Value` extras deferred to M4.
-- **M3 — Corpus v1:** Python reference generator + 15–20 models green, byte-identical, in CI.
+- **M3 — Corpus v1:** ✅ **Foundation DONE 2026-06-14.** `tools/gen_reference.py` (real
+  `transformers` 5.12.0), corpus harness (`tests/m3_corpus.rs`), `.gitattributes` (byte-exact
+  refs), CI (`.github/workflows/ci.yml`: fmt + clippy `-D warnings` + tests). **5 ungated models,
+  18 cases byte-identical** to the reference — Qwen2.5, Qwen3, SmolLM2, Phi-3, Hermes-3-Llama-3.1
+  — including tool-calling (`tojson` key-order) and Hermes's named `tool_use` sub-template with
+  Jinja macros + recursion. **Remaining for full M3:** expand to the SPEC's 15–20 (the rest —
+  Llama-3.x, Gemma, Mistral — are **gated**; need an HF token to fetch). Date-pinned
+  (`strftime_now`) models deferred to M5.
 - **M4 — Polish & publish:** docs, `COMPATIBILITY.md`, feature-flag hygiene, `0.1.0` to
   crates.io. `pub use minijinja`.
 - **M5 — Growth:** expand corpus toward 50 models; optional `hub` + `tokenizers` features;

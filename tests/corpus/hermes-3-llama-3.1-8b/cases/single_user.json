@@ -1,0 +1,12 @@
+{
+  "template_name": null,
+  "input": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What's the capital of France?"
+      }
+    ],
+    "add_generation_prompt": true
+  }
+}

@@ -1,0 +1,3 @@
+# Golden references are byte-exact transformers output; never let git normalize line endings,
+# or byte-equality in tests/m3_corpus.rs would break on checkout.
+tests/corpus/**/expected/*.txt -text linguist-generated

@@ -1,0 +1,6 @@
+{
+  "model_id": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+  "revision": "31b70e2e869a7173562077fd711b654946d38674",
+  "license": "Apache-2.0",
+  "source": "https://huggingface.co/HuggingFaceTB/SmolLM2-1.7B-Instruct"
+}

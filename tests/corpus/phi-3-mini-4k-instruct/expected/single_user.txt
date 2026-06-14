@@ -1,0 +1,3 @@
+<|user|>
+What's the capital of France?<|end|>
+<|assistant|>

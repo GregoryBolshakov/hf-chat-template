@@ -1,0 +1,7 @@
+<|user|>
+Hello!<|end|>
+<|assistant|>
+Hi there.<|end|>
+<|user|>
+Tell me a joke.<|end|>
+<|assistant|>
