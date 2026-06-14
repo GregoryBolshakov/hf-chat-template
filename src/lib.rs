@@ -30,13 +30,17 @@
 #![forbid(unsafe_code)]
 
 mod clock;
+mod config;
 mod engine;
 mod error;
 mod json;
+mod model;
 mod template;
 
 pub use clock::{Clock, FixedClock, SystemClock};
+pub use config::{ChatTemplateField, NamedTemplate, TokenField, TokenizerConfig};
 pub use error::Error;
+pub use model::{Content, Message, RenderInput};
 pub use template::{ChatTemplate, ChatTemplateBuilder};
 
 /// Re-export of the `minijinja` we build against, so downstreams can construct context

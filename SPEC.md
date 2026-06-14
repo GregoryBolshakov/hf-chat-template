@@ -100,14 +100,17 @@ match).
   `preserve_order` is **load-bearing**: without it, Value maps sort keys and `tojson` output
   diverges from Python for tool-calling. See `M0_FINDINGS.md` and the tojson note below.
 - `serde` (derive) — message/tool input types and arbitrary-value plumbing.
-- `serde_json` (plain, **no** `preserve_order` needed) — used only by our custom `tojson`
-  serializer; it serializes a `minijinja::Value` and never builds a `serde_json::Value`.
+- `serde_json` with **`preserve_order`** — the typed `render()` path (M2) builds a
+  `serde_json::Value` context, so its object maps must stay insertion-ordered too, else
+  tool-call `tojson` output sorts keys. (In M1 alone this was unnecessary; M2's typed model
+  made it load-bearing.) Also used by our custom `tojson` serializer.
 - `minijinja-contrib` with `pycompat` — Python method shim.
 
-> **Order-preservation rule (M1, important):** template data that may be `tojson`'d must be
-> deserialized **directly into `minijinja::Value`** (e.g. `serde_json::from_str::<Value>`),
-> never via `serde_json::Value`. The `context!` macro sorts keys and must not be used for
-> order-sensitive data.
+> **Order-preservation rule (important):** template data that may be `tojson`'d must keep
+> insertion order through *every* layer it passes. Two safe paths: (a) deserialize directly
+> into `minijinja::Value` (`serde_json::from_str::<Value>`); (b) route through `serde_json`
+> with `preserve_order` on (the M2 typed path). The `context!` macro sorts keys regardless and
+> must not be used for order-sensitive data.
 
 ### Optional (feature-gated, off by default)
 - `minijinja-contrib` (feature `pycompat`) → gated under our `pycompat` feature
@@ -548,8 +551,14 @@ design risk.
   `strftime_now` via dependency-free `Clock`/`FixedClock`/`SystemClock`), pycompat wired,
   whitespace flags, error model. ChatML + Mistral render byte-correctly. 18 tests green,
   clippy clean. Modules: `error`, `clock`, `json`, `engine`, `template`, `lib`.
-- **M2 — Typed input model + config loading:** `RenderInput`/`Message`/`Content`, `from_tokenizer_config`,
-  named-template resolution, error enum.
+- **M2 — Typed input model + config loading:** ✅ **DONE 2026-06-14.** `RenderInput`/`Message`/
+  `Content` (untagged string-or-parts), `TokenizerConfig` + three `chat_template` shapes,
+  `from_tokenizer_config`/`builder_from_config`, named-template resolution (§8), special-token
+  injection (§9, input overrides), `render`/`render_messages`. `serde_json` `preserve_order`
+  enabled. 11 tests in `tests/m2_model.rs`. Deviation from §5.3: arbitrary holes (`tools`,
+  `tool_calls`, content parts, `extra`) stay `serde_json::Value` rather than fully-typed
+  `Tool`/`ToolCall`/`Document` structs — open-ended shapes that typing would only constrain
+  wrongly; feature-gating of the `serde_json::Value` extras deferred to M4.
 - **M3 — Corpus v1:** Python reference generator + 15–20 models green, byte-identical, in CI.
 - **M4 — Polish & publish:** docs, `COMPATIBILITY.md`, feature-flag hygiene, `0.1.0` to
   crates.io. `pub use minijinja`.
