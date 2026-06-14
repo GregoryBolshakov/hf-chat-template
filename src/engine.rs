@@ -37,8 +37,11 @@ pub(crate) fn build(source: String, cfg: &EngineConfig) -> Result<Environment<'s
     // Chat templates are not HTML; escaping would corrupt the prompt. Force no auto-escape.
     env.set_auto_escape_callback(|_name| AutoEscape::None);
 
-    // Python string/list/dict methods (.strip(), .split(), .items(), ...).
-    if cfg.pycompat {
+    // Python string/list/dict methods (.strip(), .split(), .items(), ...). The shim lives in
+    // minijinja-contrib, which is an optional dependency gated by the `pycompat` feature.
+    let _pycompat = cfg.pycompat;
+    #[cfg(feature = "pycompat")]
+    if _pycompat {
         env.set_unknown_method_callback(minijinja_contrib::pycompat::unknown_method_callback);
     }
 

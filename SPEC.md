@@ -567,8 +567,12 @@ design risk.
   Jinja macros + recursion. **Remaining for full M3:** expand to the SPEC's 15–20 (the rest —
   Llama-3.x, Gemma, Mistral — are **gated**; need an HF token to fetch). Date-pinned
   (`strftime_now`) models deferred to M5.
-- **M4 — Polish & publish:** docs, `COMPATIBILITY.md`, feature-flag hygiene, `0.1.0` to
-  crates.io. `pub use minijinja`.
+- **M4 — Polish & publish:** ✅ **Prepared 2026-06-14 (publish pending).** README (badges,
+  examples, compat table), `COMPATIBILITY.md`, `LICENSE-MIT` + `LICENSE-APACHE`, `0.1.0`,
+  `pub use minijinja`. Feature-flag hygiene: `pycompat` is now an opt-out default feature
+  (`minijinja-contrib` optional), so the minimal-deps claim holds; CI checks `--no-default-features`.
+  Package excludes corpus/tools/SPEC; `cargo publish --dry-run` and `cargo doc -D warnings` clean.
+  **Not yet pushed to crates.io** — that step needs the owner's token + go-ahead (irreversible).
 - **M5 — Growth:** expand corpus toward 50 models; optional `hub` + `tokenizers` features;
   announce in the candle/mistral.rs/llama-cpp-rs orbits to seed adoption (downloads come from
   becoming a dependency).

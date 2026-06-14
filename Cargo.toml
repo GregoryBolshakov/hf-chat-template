@@ -1,16 +1,26 @@
 [package]
 name = "hf-chat-template"
-version = "0.0.0"
+version = "0.1.0"
 edition = "2021"
 description = "Render Hugging Face chat_template (Jinja2) strings correctly — the transformers-compatible prompt-building layer."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/GregoryBolshakov/hf-chat-template"
+readme = "README.md"
 keywords = ["llm", "jinja", "chat-template", "huggingface", "tokenizer"]
 categories = ["text-processing", "template-engine"]
+# Dev/CI-only material kept out of the published package (the corpus is large and needs Python
+# to regenerate; the runner reads it at test time and is not shipped).
+exclude = ["tests/corpus/", "tests/m3_corpus.rs", "tools/", ".github/", "SPEC.md"]
+
+[features]
+default = ["pycompat"]
+# Python string/list/dict methods on values (.strip(), .split(), | items, ...). On by default;
+# disable to drop the minijinja-contrib dependency if your templates don't need them.
+pycompat = ["dep:minijinja-contrib"]
 
 [dependencies]
 minijinja = { version = "2.20", features = ["json", "loop_controls", "preserve_order"] }
-minijinja-contrib = { version = "2.20", features = ["pycompat"] }
+minijinja-contrib = { version = "2.20", features = ["pycompat"], optional = true }
 serde = { version = "1", features = ["derive"] }
 # preserve_order: the typed render path builds a serde_json::Value context; without this,
 # object keys sort alphabetically and tool-call prompts diverge from the transformers reference.
