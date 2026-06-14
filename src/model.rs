@@ -72,6 +72,21 @@ impl Message {
             extra: Map::new(),
         }
     }
+
+    /// A `system` message with text content. Shorthand for `Message::new("system", text)`.
+    pub fn system(content: impl Into<String>) -> Self {
+        Message::new("system", content)
+    }
+
+    /// A `user` message with text content. Shorthand for `Message::new("user", text)`.
+    pub fn user(content: impl Into<String>) -> Self {
+        Message::new("user", content)
+    }
+
+    /// An `assistant` message with text content. Shorthand for `Message::new("assistant", text)`.
+    pub fn assistant(content: impl Into<String>) -> Self {
+        Message::new("assistant", content)
+    }
 }
 
 /// Message content: a plain string, or a list of multimodal parts.

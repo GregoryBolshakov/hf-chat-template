@@ -41,6 +41,31 @@ fn render_input_deserializes_from_request_json() {
 }
 
 #[test]
+fn role_constructors_match_new() {
+    assert_eq!(
+        serde_json::to_value(Message::system("s")).unwrap(),
+        serde_json::to_value(Message::new("system", "s")).unwrap()
+    );
+    assert_eq!(
+        serde_json::to_value(Message::user("u")).unwrap(),
+        serde_json::to_value(Message::new("user", "u")).unwrap()
+    );
+    assert_eq!(
+        serde_json::to_value(Message::assistant("a")).unwrap(),
+        serde_json::to_value(Message::new("assistant", "a")).unwrap()
+    );
+
+    let tmpl = ChatTemplate::from_str(CHATML).unwrap();
+    let out = tmpl
+        .render_messages(&[Message::system("be terse"), Message::user("hi")], true)
+        .unwrap();
+    assert_eq!(
+        out,
+        "<|im_start|>system\nbe terse<|im_end|>\n<|im_start|>user\nhi<|im_end|>\n<|im_start|>assistant\n"
+    );
+}
+
+#[test]
 fn render_messages_convenience() {
     let tmpl = ChatTemplate::from_str(CHATML).unwrap();
     let msgs = [Message::new("user", "yo")];
