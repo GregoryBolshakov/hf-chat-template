@@ -2,11 +2,11 @@
 name = "hf-chat-template"
 version = "0.1.0"
 edition = "2021"
-description = "Render Hugging Face chat_template (Jinja2) strings correctly — the transformers-compatible prompt-building layer."
+description = "Render Hugging Face chat_template (Jinja2) prompts byte-identically to transformers.apply_chat_template."
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/GregoryBolshakov/hf-chat-template"
 readme = "README.md"
-keywords = ["llm", "jinja", "chat-template", "huggingface", "tokenizer"]
+keywords = ["chat-template", "huggingface", "transformers", "jinja", "llm"]
 categories = ["text-processing", "template-engine"]
 # Dev/CI-only material kept out of the published package (the corpus is large and needs Python
 # to regenerate; the runner reads it at test time and is not shipped).
