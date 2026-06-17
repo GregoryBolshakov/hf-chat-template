@@ -605,7 +605,72 @@ design risk.
 | pycompat missing a method some template uses | Med | Corpus audit of all `.method()` calls; register supplements |
 | transformers changes reference behavior | Low-Med | Pin transformers version in PROVENANCE; deliberate re-pin |
 | Big SDKs vendor their own instead of depending | Med (download ceiling) | Make it trivially cheap + obviously more correct (corpus) than vendoring |
-| API ties to minijinja major version via `render_value` | Low | Re-export minijinja; document; bump our major with theirs |
+| API ties to minijinja major version via `render_value` | Low | Re-export minijinja; document; bump our major with theirs (§18 T1.2) |
+| Public API exposes `tokenizers` 0.x type; its minors are breaking | High (for 1.0) | Resolve before 1.0: wait for tokenizers 1.0, hide the type, or exclude that surface from our SemVer (§18 T1.1) |
+
+---
+
+## 18. Road to 1.0 (release criteria)
+
+`1.0` is a promise on crates.io: **the public API will not break until 2.0.** So the gate is
+(a) deciding what we freeze and (b) having enough correctness evidence to make the freeze
+trustworthy. This section is the contract for that release. **A change qualifies as 1.0 work
+only if it is on this list.** Anything else — ergonomic tweaks, extra optional features, polish —
+is explicitly out of scope for the `1.0` gate and must not block it (do it before in a `0.x`
+or after in a `1.x` minor). This list exists to stop the "infinite small adjustments" loop.
+
+The two items that are the *real* work (everything else is a day or two): **T1.3 corpus
+breadth** and **T1.1 the dependency-coupling decision**. Sequence the rest around those.
+
+### Tier 1 — blockers (must resolve; each forces a conscious decision, not a tweak)
+
+- **T1.1 — Pre-1.0 dependency in the public API (`tokenizers`).** `render_and_encode` takes
+  `tokenizers::Tokenizer` and we `pub use tokenizers` (0.23). In SemVer, `0.x` *minor* bumps are
+  breaking, so `tokenizers` 0.23→0.24 can break *our* API — a 1.0 stability promise hostage to an
+  unstable crate. **Decide one:** (a) wait for `tokenizers` 1.0; (b) don't expose its type (accept
+  a `tokenizer.json` path / a small trait, construct internally); (c) keep the coupling but put
+  the `tokenizers` surface behind a feature documented as **excluded from our SemVer guarantee**.
+  No 1.0 until this is chosen and implemented.
+- **T1.2 — minijinja coupling (milder, same shape).** `render_value(minijinja::Value)` +
+  `pub use minijinja` tie our major to minijinja's. minijinja is `1.0+`, so its *minors* are safe;
+  only a minijinja `3.0` forces our `2.0`. **Decision:** acceptable to keep, but `render_value`
+  must be documented as the escape hatch carrying an explicit "stability tied to minijinja major"
+  asterisk (see §12, the risk row in §17). Confirm we are comfortable freezing with this caveat.
+- **T1.3 — Corpus breadth backs the core claim.** The thesis is "byte-identical to transformers";
+  today that is proven for **5 ungated, ChatML-ish models**. 1.0 ("trust in production") needs the
+  marquee families covered: **Llama-3.x, Gemma, Mistral, Command-R**, plus larger Qwen. Requires an
+  `HF_TOKEN` (gated fetch). Target: the SPEC's original **15–20 models** byte-identical in CI.
+- **T1.4 — `strftime_now` divergence resolved, not just documented.** Date-stamped templates
+  (Llama-3.1, Command-R) currently differ from transformers (UTC vs local time) — a real hole in
+  the core promise, not a caveat we can ship in 1.0 unaddressed. Ship the optional **`strftime`**
+  real-clock feature (`time`/`chrono`) and add at least one date-stamped model to the corpus,
+  date-pinned, proving a byte-identical match.
+
+### Tier 2 — must-do before freezing the surface (cheap, but do once and deliberately)
+
+- **T2.1 — API-freeze review.** One deliberate pass asking "what will users hit that forces a
+  2.0?" Known candidates: `Message` lacks tool-message / assistant-with-`tool_calls`
+  constructors; confirm `Content`'s shape is final; confirm `Error` exposes enough for callers to
+  act. Add what's missing *now*; additions after 1.0 are fine but signature/shape changes are not.
+- **T2.2 — Production-trust hygiene (already in §13/§14, not yet done):**
+  - `#![deny(missing_docs)]` on the crate root (currently only `#![forbid(unsafe_code)]`).
+  - Declared **MSRV** (`rust-version` in `Cargo.toml`) + a CI job pinning it.
+  - **`cargo-deny`** config (license + duplicate-dep hygiene); downstreams vet this.
+  - **Panic-safety:** adversarial template/input must return `Err`, never unwind. Assert it; a
+    small `cargo fuzz` target on `from_str` + `render` is the standard of evidence.
+
+### Tier 3 — the real gate, not a code task
+
+- **T3.1 — Soak at `0.x` with real users first.** Freezing an API nobody depends on is how 1.0
+  regret happens. Broaden the corpus, seed adoption (candle / mistral.rs / llama-cpp-rs orbit),
+  collect API feedback, *then* cut 1.0. Going 1.0 to *signal* maturity before anyone depends on us
+  is cosmetic and explicitly not a reason to release.
+
+### Explicitly NOT 1.0 blockers (so we don't over-invest)
+
+Performance (minijinja is already fast enough), additional optional features beyond `strftime`,
+async, and any further ergonomic sugar. These are `0.x`/`1.x`-minor work, never a reason to hold
+or rush the freeze.
 
 ---
 
