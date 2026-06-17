@@ -584,9 +584,15 @@ design risk.
     Errors fold into `Error::Hub` (feature-gated; the hf-hub error type stays out of our public
     API). Network test in `tests/hub.rs` (`#[ignore]`, excluded from the package). CI gained an
     all-features clippy; docs.rs builds with `all-features`.
+  - ✅ **`tokenizers` feature (0.1.3).** `ChatTemplate::render_and_encode(input, &Tokenizer)`
+    renders then encodes, returning `(String, Vec<u32>)`. Encodes with
+    `add_special_tokens = false` (the template owns the special tokens; matches
+    `apply_chat_template(tokenize=True)`). `tokenizers` is optional, default-features off +
+    `onig` only (drops esaxx_fast C++ and the progressbar). Errors fold into `Error::Tokenize`
+    (feature-gated). `pub use tokenizers;` re-exported to avoid version skew. Offline test with
+    a hand-built WordLevel fixture proves the no-double-BOS contract; CI runs `--all-features`.
   - **Remaining:** expand corpus toward 50 models (gated families need an HF token); optional
-    `tokenizers` feature (prompt → IDs, SPEC marks "Future"); optional `strftime` real-clock;
-    announce in the candle/mistral.rs/llama-cpp-rs orbits to seed adoption.
+    `strftime` real-clock; announce in the candle/mistral.rs/llama-cpp-rs orbits to seed adoption.
 
 ---
 

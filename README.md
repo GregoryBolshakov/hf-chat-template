@@ -92,6 +92,28 @@ let prompt = tmpl.render_messages(&[Message::user("Hi")], true)?;
 # Ok::<(), hf_chat_template::Error>(())
 ```
 
+## Tokenizing
+
+The `tokenizers` feature adds `render_and_encode`, which renders the prompt and encodes it to
+token IDs in one step. It encodes with `add_special_tokens = false`, because the template already
+emits the model's special tokens. This is what `transformers.apply_chat_template(...,
+tokenize=True)` does, and it avoids a doubled BOS.
+
+```toml
+hf-chat-template = { version = "0.1", features = ["tokenizers"] }
+```
+
+```rust,no_run
+use hf_chat_template::{ChatTemplate, Message, RenderInput};
+use hf_chat_template::tokenizers::Tokenizer;
+
+let tmpl = ChatTemplate::from_str("{{ messages[0].content }}")?;
+let tok = Tokenizer::from_file("tokenizer.json").unwrap();
+let input = RenderInput { messages: vec![Message::user("hi")], ..Default::default() };
+let (prompt, ids) = tmpl.render_and_encode(&input, &tok)?;
+# Ok::<(), hf_chat_template::Error>(())
+```
+
 ## Feature flags
 
 `pycompat` is on by default. It adds Python methods on values (`.strip()`, `.split()`, `| items`)
@@ -100,6 +122,9 @@ those methods.
 
 `hub` is off by default. It adds `from_hub` and `from_hub_revision`, pulling in `hf-hub` and a
 TLS stack that the core string-rendering path does not need.
+
+`tokenizers` is off by default. It adds `render_and_encode` and re-exports `tokenizers`, pulling
+in that crate and its `onig` regex backend.
 
 ## Caveats
 

@@ -106,6 +106,39 @@ impl ChatTemplate {
         self.render_value(ctx)
     }
 
+    /// Render `input`, then encode the prompt to token IDs with `tokenizer`, returning both.
+    /// Requires the `tokenizers` feature.
+    ///
+    /// Encodes with `add_special_tokens = false`: a chat template already emits the model's
+    /// special tokens (`bos_token`, end-of-turn markers, …), so letting the tokenizer add them
+    /// again would double them. This matches what `transformers.apply_chat_template(...,
+    /// tokenize=True)` does. The `tokenizer` you pass is the model's own `tokenizer.json`
+    /// (e.g. `tokenizers::Tokenizer::from_file("tokenizer.json")`).
+    ///
+    /// ```no_run
+    /// use hf_chat_template::{ChatTemplate, Message, RenderInput};
+    /// use hf_chat_template::tokenizers::Tokenizer;
+    ///
+    /// let tmpl = ChatTemplate::from_str("{{ messages[0].content }}")?;
+    /// let tok = Tokenizer::from_file("tokenizer.json").unwrap();
+    /// let input = RenderInput { messages: vec![Message::user("hi")], ..Default::default() };
+    /// let (prompt, ids) = tmpl.render_and_encode(&input, &tok)?;
+    /// # Ok::<(), hf_chat_template::Error>(())
+    /// ```
+    #[cfg(feature = "tokenizers")]
+    pub fn render_and_encode(
+        &self,
+        input: &RenderInput,
+        tokenizer: &tokenizers::Tokenizer,
+    ) -> Result<(String, Vec<u32>), Error> {
+        let prompt = self.render(input)?;
+        let encoding = tokenizer
+            .encode(prompt.as_str(), false)
+            .map_err(|e| Error::Tokenize(e.to_string()))?;
+        let ids = encoding.get_ids().to_vec();
+        Ok((prompt, ids))
+    }
+
     /// Convenience: render with only `messages` and the generation-prompt flag.
     pub fn render_messages(
         &self,

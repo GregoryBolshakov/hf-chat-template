@@ -49,3 +49,9 @@ pub use template::{ChatTemplate, ChatTemplateBuilder};
 /// [`Value`](minijinja::Value)s without guessing a version. Note: `render_value` ties our
 /// public API to this `minijinja` major version.
 pub use minijinja;
+
+/// Re-export of the `tokenizers` we build against (`tokenizers` feature). `render_and_encode`
+/// takes a [`tokenizers::Tokenizer`], so this ties our public API to its major version; use
+/// this re-export to avoid a version-skew mismatch.
+#[cfg(feature = "tokenizers")]
+pub use tokenizers;
