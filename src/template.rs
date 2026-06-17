@@ -72,6 +72,33 @@ impl ChatTemplate {
         ))
     }
 
+    /// Fetch `tokenizer_config.json` for a Hub repo (default branch) and compile its default
+    /// template, injecting the config's special tokens. Requires the `hub` feature.
+    ///
+    /// Authentication uses `hf-hub`'s discovery (the `HF_TOKEN` env var or the cached
+    /// `huggingface-cli login` token); gated repos need a token with access. For a pinned
+    /// commit or branch, use [`from_hub_revision`](ChatTemplate::from_hub_revision).
+    ///
+    /// ```no_run
+    /// use hf_chat_template::{ChatTemplate, Message};
+    /// let tmpl = ChatTemplate::from_hub("Qwen/Qwen2.5-0.5B-Instruct")?;
+    /// let prompt = tmpl.render_messages(&[Message::user("Hi")], true)?;
+    /// # Ok::<(), hf_chat_template::Error>(())
+    /// ```
+    #[cfg(feature = "hub")]
+    pub fn from_hub(repo_id: &str) -> Result<Self, Error> {
+        let config = crate::hub::fetch_config(repo_id, None)?;
+        ChatTemplate::from_tokenizer_config(&config)
+    }
+
+    /// Like [`from_hub`](ChatTemplate::from_hub), but pins a specific `revision` (a branch,
+    /// tag, or commit SHA). Requires the `hub` feature.
+    #[cfg(feature = "hub")]
+    pub fn from_hub_revision(repo_id: &str, revision: &str) -> Result<Self, Error> {
+        let config = crate::hub::fetch_config(repo_id, Some(revision))?;
+        ChatTemplate::from_tokenizer_config(&config)
+    }
+
     /// Render the typed input model to the final prompt string. Special tokens from the
     /// source config are injected first; any matching key in [`RenderInput::extra`] wins.
     pub fn render(&self, input: &RenderInput) -> Result<String, Error> {

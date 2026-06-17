@@ -33,6 +33,8 @@ mod clock;
 mod config;
 mod engine;
 mod error;
+#[cfg(feature = "hub")]
+mod hub;
 mod json;
 mod model;
 mod template;

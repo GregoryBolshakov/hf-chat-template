@@ -1,6 +1,6 @@
 [package]
 name = "hf-chat-template"
-version = "0.1.1"
+version = "0.1.2"
 edition = "2021"
 description = "Render Hugging Face chat_template (Jinja2) prompts byte-identically to transformers.apply_chat_template."
 license = "MIT OR Apache-2.0"
@@ -10,18 +10,28 @@ keywords = ["chat-template", "huggingface", "transformers", "jinja", "llm"]
 categories = ["text-processing", "template-engine"]
 # Dev/CI-only material kept out of the published package (the corpus is large and needs Python
 # to regenerate; the runner reads it at test time and is not shipped).
-exclude = ["tests/corpus/", "tests/m3_corpus.rs", "tools/", ".github/", "SPEC.md"]
+exclude = ["tests/corpus/", "tests/m3_corpus.rs", "tests/hub.rs", "tools/", ".github/", "SPEC.md"]
+
+# Build docs with all features on docs.rs so `from_hub` (gated by `hub`) is documented.
+[package.metadata.docs.rs]
+all-features = true
 
 [features]
 default = ["pycompat"]
 # Python string/list/dict methods on values (.strip(), .split(), | items, ...). On by default;
 # disable to drop the minijinja-contrib dependency if your templates don't need them.
 pycompat = ["dep:minijinja-contrib"]
+# `ChatTemplate::from_hub("org/model")`: fetch tokenizer_config.json from the Hugging Face Hub.
+# Off by default — pulls in hf-hub and a TLS stack, which the core "render a string" path doesn't need.
+hub = ["dep:hf-hub"]
 
 [dependencies]
 minijinja = { version = "2.20", features = ["json", "loop_controls", "preserve_order"] }
 minijinja-contrib = { version = "2.20", features = ["pycompat"], optional = true }
 serde = { version = "1", features = ["derive"] }
+# Sync (ureq) Hub client only. default-features off drops the async reqwest/tokio stack;
+# omitting native-tls makes hf-hub's sync client use rustls, so there is no system OpenSSL dep.
+hf-hub = { version = "0.5", default-features = false, features = ["ureq"], optional = true }
 # preserve_order: the typed render path builds a serde_json::Value context; without this,
 # object keys sort alphabetically and tool-call prompts diverge from the transformers reference.
 serde_json = { version = "1.0.150", features = ["preserve_order"] }

@@ -26,6 +26,11 @@ pub enum Error {
     /// The `tokenizer_config.json` had no usable `chat_template`, or a requested named
     /// template was absent / the field had an unexpected shape.
     Config(String),
+    /// Fetching a file from the Hugging Face Hub failed (network, auth/gated repo, or the file
+    /// is absent). Only present with the `hub` feature. Carries the underlying message; the
+    /// `hf-hub` error type is deliberately kept out of our public API.
+    #[cfg(feature = "hub")]
+    Hub(String),
 }
 
 impl fmt::Display for Error {
@@ -37,6 +42,8 @@ impl fmt::Display for Error {
             Error::Compile(e) => write!(f, "chat template failed to compile: {e}"),
             Error::Render(e) => write!(f, "chat template failed to render: {e}"),
             Error::Config(m) => write!(f, "invalid chat-template config: {m}"),
+            #[cfg(feature = "hub")]
+            Error::Hub(m) => write!(f, "failed to fetch from the Hugging Face Hub: {m}"),
         }
     }
 }

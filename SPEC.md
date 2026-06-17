@@ -577,9 +577,16 @@ design risk.
 - **0.1.1 (pre-M5 polish):** additive ergonomics `Message::system`/`user`/`assistant` alongside
   `Message::new`; README rewritten to the plain example-first style (`CLAUDE.md`). Prepared,
   publish pending owner go-ahead.
-- **M5 — Growth:** expand corpus toward 50 models; optional `hub` + `tokenizers` features;
-  announce in the candle/mistral.rs/llama-cpp-rs orbits to seed adoption (downloads come from
-  becoming a dependency).
+- **M5 — Growth (in progress):**
+  - ✅ **`hub` feature (0.1.2).** `ChatTemplate::from_hub(repo)` / `from_hub_revision(repo, rev)`
+    fetch `tokenizer_config.json` via hf-hub's sync (ureq) client. default-features off +
+    no `native-tls` → rustls, so **no system OpenSSL dep**. Off by default; `hf-hub` is optional.
+    Errors fold into `Error::Hub` (feature-gated; the hf-hub error type stays out of our public
+    API). Network test in `tests/hub.rs` (`#[ignore]`, excluded from the package). CI gained an
+    all-features clippy; docs.rs builds with `all-features`.
+  - **Remaining:** expand corpus toward 50 models (gated families need an HF token); optional
+    `tokenizers` feature (prompt → IDs, SPEC marks "Future"); optional `strftime` real-clock;
+    announce in the candle/mistral.rs/llama-cpp-rs orbits to seed adoption.
 
 ---
 

@@ -73,11 +73,33 @@ These models render byte-identical to `transformers` in CI. See
 | Phi-3 | `<|user|>` / `<|end|>` markers |
 | Hermes-3-Llama-3.1 | named `tool_use` sub-template, Jinja macros and recursion |
 
+## Loading from the Hub
+
+The `hub` feature adds `from_hub`, which fetches a model's `tokenizer_config.json` and compiles
+its template in one call. It uses the synchronous `hf-hub` client with rustls, so there is no
+system OpenSSL dependency. Authentication follows `hf-hub`: the `HF_TOKEN` env var or the token
+from `huggingface-cli login`, which gated repos need.
+
+```toml
+hf-chat-template = { version = "0.1", features = ["hub"] }
+```
+
+```rust,no_run
+use hf_chat_template::{ChatTemplate, Message};
+
+let tmpl = ChatTemplate::from_hub("Qwen/Qwen2.5-0.5B-Instruct")?;
+let prompt = tmpl.render_messages(&[Message::user("Hi")], true)?;
+# Ok::<(), hf_chat_template::Error>(())
+```
+
 ## Feature flags
 
 `pycompat` is on by default. It adds Python methods on values (`.strip()`, `.split()`, `| items`)
 through `minijinja-contrib`. Disable it to drop that dependency when your templates do not use
 those methods.
+
+`hub` is off by default. It adds `from_hub` and `from_hub_revision`, pulling in `hf-hub` and a
+TLS stack that the core string-rendering path does not need.
 
 ## Caveats
 
