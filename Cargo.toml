@@ -1,6 +1,6 @@
 [package]
 name = "hf-chat-template"
-version = "0.1.4"
+version = "0.1.5"
 edition = "2021"
 description = "Render Hugging Face chat_template (Jinja2) prompts byte-identically to transformers.apply_chat_template."
 license = "MIT OR Apache-2.0"

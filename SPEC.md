@@ -67,6 +67,10 @@ Real templates exercise corners a naive `minijinja::render` gets wrong or reject
    on `content is string`.
 10. **Tool-call round-trips** — assistant messages carry `tool_calls`; `tool`-role messages carry
     results. Formatting is highly model-specific.
+11. **`{% generation %}` block** — `transformers` registers a custom Jinja block that marks
+    assistant-generated spans (for `return_assistant_tokens_mask`). It does not change the rendered
+    string, but a plain Jinja engine rejects the unknown tag. Newer reasoning templates use it
+    (SmolLM3, …).
 
 The compatibility target is the `transformers` reference, including its globals and its Jinja
 environment settings (`trim_blocks=True`, `lstrip_blocks=True`).
@@ -190,6 +194,10 @@ Installed onto the `minijinja::Environment` to match the `transformers` referenc
   `transformers` behavior. Overridable via the builder.
 - **`namespace()` mutation:** supported by minijinja to the depth real templates need (verified by
   the corpus, including Hermes's macro/recursion path).
+- **`{% generation %}` block:** rewritten to an unconditional `{% if true %}` before compilation
+  (minijinja has no custom-statement API). The block only marks assistant token spans, so this is
+  output-neutral; whitespace-control markers are preserved and both are block tags, so
+  `trim_blocks`/`lstrip_blocks` behave identically. Verified byte-identical by the corpus (SmolLM3).
 
 ## 8. Template resolution & special tokens
 

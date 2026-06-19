@@ -33,6 +33,7 @@ Generated with **`transformers` 5.12.0** (Python 3.10, `jinja2` 3.1.6). Regenera
 | qwen2.5-0.5b-instruct | Qwen/Qwen2.5-0.5B-Instruct | Apache-2.0 | `7ae557604adf` | 4 |
 | qwen3-0.6b | Qwen/Qwen3-0.6B | Apache-2.0 | `c1899de289a0` | 4 |
 | smollm2-1.7b-instruct | HuggingFaceTB/SmolLM2-1.7B-Instruct | Apache-2.0 | `31b70e2e869a` | 3 |
+| smollm3-3b | HuggingFaceTB/SmolLM3-3B | Apache-2.0 | `a07cc9a04f16` | 2 |
 
 Each `tokenizer_config.json` is a trimmed excerpt of the upstream model's file (`chat_template`
 plus special tokens), redistributed under that model's license — see each row's `license` and
@@ -45,4 +46,7 @@ model here uses `strftime_now`, so references are reproducible without clock pin
 `with_tools` / `tool_use` cases exercise `tojson` key-order and (for Hermes) the named `tool_use`
 sub-template with Jinja macros. `lfm2-1.2b` covers the standalone `chat_template.jinja` layout,
 where the template lives in its own file and the special tokens come from `tokenizer_config.json`.
-Growing toward ~50 models and adding date-pinned (`strftime_now`) models is tracked for M5.
+`smollm3-3b` covers the `transformers` `{% generation %}` block: its cases use a `/system_override`
+system message, which takes the template's override branch (no `strftime_now`, so date-independent)
+while assistant messages still exercise the generation block. Growing toward ~50 models and adding
+date-pinned (`strftime_now`) models is tracked for M5.

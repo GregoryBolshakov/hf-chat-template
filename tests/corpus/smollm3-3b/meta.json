@@ -1,0 +1,7 @@
+{
+  "model_id": "HuggingFaceTB/SmolLM3-3B",
+  "revision": "a07cc9a04f16550a088caea529712d1d335b0ac1",
+  "license": "Apache-2.0",
+  "source": "https://huggingface.co/HuggingFaceTB/SmolLM3-3B",
+  "note": "Standalone chat_template.jinja using the transformers {% generation %} block extension. Cases use a '/system_override' system message: that branch skips strftime_now (so references are date-independent) while assistant messages still exercise the generation block."
+}

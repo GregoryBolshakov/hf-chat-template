@@ -1,0 +1,6 @@
+<|im_start|>system
+Answer only in French.<|im_end|>
+<|im_start|>user
+Bonjour<|im_end|>
+<|im_start|>assistant
+Salut !<|im_end|>

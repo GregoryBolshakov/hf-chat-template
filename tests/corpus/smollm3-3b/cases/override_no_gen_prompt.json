@@ -1,0 +1,11 @@
+{
+  "template_name": null,
+  "input": {
+    "messages": [
+      { "role": "system", "content": "Answer only in French. /system_override" },
+      { "role": "user", "content": "Bonjour" },
+      { "role": "assistant", "content": "Salut !" }
+    ],
+    "add_generation_prompt": false
+  }
+}

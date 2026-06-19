@@ -18,6 +18,7 @@ Byte-identical in CI:
 | microsoft/Phi-3-mini-4k-instruct | basic, no-system, single-user |
 | NousResearch/Hermes-3-Llama-3.1-8B | basic, no-system, single-user, named `tool_use` template |
 | LiquidAI/LFM2-1.2B | basic, no-system, single-user, tool list (standalone `chat_template.jinja`) |
+| HuggingFaceTB/SmolLM3-3B | standalone `chat_template.jinja`, `{% generation %}` block (reasoning) |
 
 This is the v1 corpus (ungated models). LFM2 ships its template as a standalone
 `chat_template.jinja` file rather than inline in `tokenizer_config.json`, exercising that loading
@@ -43,6 +44,10 @@ Confirmed against real templates and the corpus:
 - **`pycompat`** (default feature) — Python methods on values: `.strip()`, `.lstrip()`,
   `.rstrip()`, `.split()`, `.startswith()`, `.endswith()`, `.title()`, `.upper()`, `.lower()`,
   `| items`, `| trim`, and more, provided by `minijinja-contrib`.
+- **`{% generation %}` block** — the `transformers` AssistantTracker block (marks assistant token
+  spans for `return_assistant_tokens_mask`). It is rewritten to an output-neutral `{% if true %}`
+  before compilation, so reasoning templates that use it (SmolLM3) render byte-identically. The
+  span metadata itself is not exposed; this crate emits a string, not a token mask.
 
 ## Known divergences & caveats
 

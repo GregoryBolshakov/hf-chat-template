@@ -88,6 +88,7 @@ These models render byte-identical to `transformers` in CI. See
 | Phi-3 | `<|user|>` / `<|end|>` markers |
 | Hermes-3-Llama-3.1 | named `tool_use` sub-template, Jinja macros and recursion |
 | LFM2 | standalone `chat_template.jinja` file, tool list (`tojson`) |
+| SmolLM3 | standalone file, `{% generation %}` reasoning block |
 
 ## Loading from the Hub
 
