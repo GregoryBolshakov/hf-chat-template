@@ -1,0 +1,3 @@
+<｜begin▁of▁sentence｜>User: What is the capital of France?
+
+Assistant:

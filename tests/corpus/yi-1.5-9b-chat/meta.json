@@ -1,0 +1,6 @@
+{
+  "model_id": "01-ai/Yi-1.5-9B-Chat",
+  "revision": "1a0fc698cf883c4f5c325f026ca79f0ebd9955a5",
+  "license": "Apache-2.0",
+  "source": "https://huggingface.co/01-ai/Yi-1.5-9B-Chat"
+}

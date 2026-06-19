@@ -1,0 +1,9 @@
+<|system|>
+You are terse.</s>
+<|user|>
+Hello!</s>
+<|assistant|>
+Hi.</s>
+<|user|>
+What is 2+2?</s>
+<|assistant|>

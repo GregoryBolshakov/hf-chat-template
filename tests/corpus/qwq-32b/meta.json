@@ -1,0 +1,6 @@
+{
+  "model_id": "Qwen/QwQ-32B",
+  "revision": "976055f8c83f394f35dbd3ab09a285a984907bd0",
+  "license": "Apache-2.0",
+  "source": "https://huggingface.co/Qwen/QwQ-32B"
+}

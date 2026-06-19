@@ -1,0 +1,20 @@
+{
+  "template_name": null,
+  "input": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hello!"
+      },
+      {
+        "role": "assistant",
+        "content": "Hi."
+      },
+      {
+        "role": "user",
+        "content": "What is 2+2?"
+      }
+    ],
+    "add_generation_prompt": true
+  }
+}

@@ -1,0 +1,9 @@
+You are terse.
+
+User: Hello!
+
+Assistant: Hi.
+
+User: What is 2+2?
+
+Assistant:

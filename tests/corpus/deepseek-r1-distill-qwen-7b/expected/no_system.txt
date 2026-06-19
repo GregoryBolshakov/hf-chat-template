@@ -1,0 +1,1 @@
+<｜begin▁of▁sentence｜><｜User｜>Hello!<｜Assistant｜>Hi.<｜end▁of▁sentence｜><｜User｜>What is 2+2?<｜Assistant｜><think>

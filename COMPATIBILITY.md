@@ -19,11 +19,19 @@ Byte-identical in CI:
 | NousResearch/Hermes-3-Llama-3.1-8B | basic, no-system, single-user, named `tool_use` template |
 | LiquidAI/LFM2-1.2B | basic, no-system, single-user, tool list (standalone `chat_template.jinja`) |
 | HuggingFaceTB/SmolLM3-3B | standalone `chat_template.jinja`, `{% generation %}` block (reasoning) |
+| mistralai/Mistral-7B-Instruct-v0.3 | basic, no-system, single-user, tool calling (`[INST]` / `[AVAILABLE_TOOLS]`) |
+| Qwen/QwQ-32B | basic, no-system, single-user, tool calling (reasoning, `</think>` split) |
+| deepseek-ai/DeepSeek-R1-Distill-Qwen-7B | basic, no-system, single-user (reasoning, `<think>`) |
+| deepseek-ai/deepseek-llm-7b-chat | basic, no-system, single-user (`User:` / `Assistant:`) |
+| openchat/openchat-3.5-0106 | basic, no-system, single-user (`GPT4 Correct …`, `.title()`) |
+| HuggingFaceH4/zephyr-7b-beta | basic, no-system, single-user (`<\|user\|>` / `<\|assistant\|>`) |
+| 01-ai/Yi-1.5-9B-Chat | basic, no-system, single-user (ChatML variant) |
+| tiiuae/falcon-7b-instruct | basic, no-system, single-user (`.strip()` / `.replace()`) |
 
-This is the v1 corpus (ungated models). LFM2 ships its template as a standalone
-`chat_template.jinja` file rather than inline in `tokenizer_config.json`, exercising that loading
-path. Expanding toward the major gated families (Llama-3.x, Gemma, Mistral) is in progress and
-requires a Hugging Face token to fetch.
+This is the ungated corpus: 15 models, 50 cases. It spans the major template families people run
+(Mistral `[INST]`, ChatML, DeepSeek, reasoning templates with `<think>` / `{% generation %}`,
+standalone `chat_template.jinja` layouts, and tool calling). Expanding to the gated families
+(Llama-3.x, Gemma, Command-R) requires a Hugging Face token to fetch and is in progress.
 
 ## Jinja surface supported
 

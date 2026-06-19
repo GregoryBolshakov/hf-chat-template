@@ -1,0 +1,1 @@
+<s>GPT4 Correct System: You are terse.<|end_of_turn|>GPT4 Correct User: Hello!<|end_of_turn|>GPT4 Correct Assistant: Hi.<|end_of_turn|>GPT4 Correct User: What is 2+2?<|end_of_turn|>GPT4 Correct Assistant:

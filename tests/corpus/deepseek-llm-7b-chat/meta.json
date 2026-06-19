@@ -1,0 +1,6 @@
+{
+  "model_id": "deepseek-ai/deepseek-llm-7b-chat",
+  "revision": "afbda8b347ec881666061fa67447046fc5164ec8",
+  "license": "DeepSeek License Agreement",
+  "source": "https://huggingface.co/deepseek-ai/deepseek-llm-7b-chat"
+}

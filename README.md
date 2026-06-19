@@ -83,12 +83,17 @@ These models render byte-identical to `transformers` in CI. See
 
 | Model | Notes |
 |---|---|
-| Qwen2.5, Qwen3 | ChatML, tool calling (`tojson`) |
+| Qwen2.5, Qwen3, QwQ-32B | ChatML, tool calling (`tojson`), reasoning |
 | SmolLM2 | ChatML |
 | Phi-3 | `<\|user\|>` / `<\|end\|>` markers |
 | Hermes-3-Llama-3.1 | named `tool_use` sub-template, Jinja macros and recursion |
+| Mistral-7B-Instruct-v0.3 | `[INST]` / `[AVAILABLE_TOOLS]`, tool calling |
+| DeepSeek-R1-Distill, deepseek-llm | reasoning (`<think>`), `User:` / `Assistant:` |
+| OpenChat-3.5, Zephyr, Yi-1.5, Falcon | varied prompt formats, pycompat methods |
 | LFM2 | standalone `chat_template.jinja` file, tool list (`tojson`) |
 | SmolLM3 | standalone file, `{% generation %}` reasoning block |
+
+Fifteen models, fifty cases, all byte-identical in CI.
 
 ## Loading from the Hub
 

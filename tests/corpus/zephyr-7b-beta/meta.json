@@ -1,0 +1,6 @@
+{
+  "model_id": "HuggingFaceH4/zephyr-7b-beta",
+  "revision": "892b3d7a7b1cf10c7a701c60881cd93df615734c",
+  "license": "MIT",
+  "source": "https://huggingface.co/HuggingFaceH4/zephyr-7b-beta"
+}
