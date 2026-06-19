@@ -17,9 +17,12 @@ Byte-identical in CI:
 | HuggingFaceTB/SmolLM2-1.7B-Instruct | basic, no-system, single-user |
 | microsoft/Phi-3-mini-4k-instruct | basic, no-system, single-user |
 | NousResearch/Hermes-3-Llama-3.1-8B | basic, no-system, single-user, named `tool_use` template |
+| LiquidAI/LFM2-1.2B | basic, no-system, single-user, tool list (standalone `chat_template.jinja`) |
 
-This is the v1 corpus (ungated models). Expanding toward the major gated families
-(Llama-3.x, Gemma, Mistral) is in progress and requires a Hugging Face token to fetch.
+This is the v1 corpus (ungated models). LFM2 ships its template as a standalone
+`chat_template.jinja` file rather than inline in `tokenizer_config.json`, exercising that loading
+path. Expanding toward the major gated families (Llama-3.x, Gemma, Mistral) is in progress and
+requires a Hugging Face token to fetch.
 
 ## Jinja surface supported
 

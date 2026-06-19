@@ -13,11 +13,28 @@
 use std::fs;
 use std::path::{Path, PathBuf};
 
-use hf_chat_template::{ChatTemplate, Message, RenderInput, TokenizerConfig};
+use hf_chat_template::{
+    ChatTemplate, ChatTemplateBuilder, Error, Message, RenderInput, TokenizerConfig,
+};
 use serde::Deserialize;
 
 fn corpus_dir() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/corpus")
+}
+
+/// Build a [`ChatTemplateBuilder`] for a model dir, supporting both template layouts: an inline
+/// `chat_template` in `tokenizer_config.json`, or a standalone `chat_template.jinja` file
+/// alongside it (newer models — LFM2, Gemma 3+). The standalone file, when present, supplies the
+/// body while special tokens still come from the config (matching `transformers`).
+fn builder_for(dir: &Path, cfg: &TokenizerConfig) -> Result<ChatTemplateBuilder, Error> {
+    let jinja = dir.join("chat_template.jinja");
+    if jinja.exists() {
+        let src =
+            fs::read_to_string(&jinja).unwrap_or_else(|e| panic!("read {}: {e}", jinja.display()));
+        Ok(ChatTemplate::builder(&src).special_tokens_from(cfg))
+    } else {
+        ChatTemplate::builder_from_config(cfg)
+    }
 }
 
 /// One corpus case: the typed render input plus an optional named-template selection.
@@ -79,10 +96,10 @@ fn corpus_matches_transformers_reference() {
             };
 
             // Build through the real config path; honor a named sub-template if the case asks.
-            let mut builder = match ChatTemplate::builder_from_config(&cfg) {
+            let mut builder = match builder_for(&dir, &cfg) {
                 Ok(b) => b,
                 Err(e) => {
-                    failures.push(format!("{slug}/{name}: builder_from_config failed: {e}"));
+                    failures.push(format!("{slug}/{name}: builder_for failed: {e}"));
                     continue;
                 }
             };
@@ -140,7 +157,10 @@ fn every_real_template_compiles_and_renders() {
     for dir in model_dirs() {
         let slug = dir.file_name().unwrap().to_string_lossy().into_owned();
         let cfg = load_config(&dir);
-        match ChatTemplate::from_tokenizer_config(&cfg).and_then(|t| t.render(&basic)) {
+        match builder_for(&dir, &cfg)
+            .and_then(|b| b.build())
+            .and_then(|t| t.render(&basic))
+        {
             Ok(out) if !out.is_empty() => {}
             Ok(_) => failures.push(format!("{slug}: empty output")),
             Err(e) => failures.push(format!("{slug}: {e}")),

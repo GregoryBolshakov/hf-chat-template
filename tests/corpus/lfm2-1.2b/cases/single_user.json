@@ -1,0 +1,9 @@
+{
+  "template_name": null,
+  "input": {
+    "messages": [
+      { "role": "user", "content": "Capital of France?" }
+    ],
+    "add_generation_prompt": false
+  }
+}

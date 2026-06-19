@@ -42,6 +42,21 @@ let prompt = tmpl.render_messages(&[Message::user("Hi")], true)?;
 # Ok::<(), Box<dyn std::error::Error>>(())
 ```
 
+Newer models ship the template as a standalone `chat_template.jinja` file instead of inside
+`tokenizer_config.json`. Load that with `from_template_and_config`, passing the template string
+and the config the special tokens come from.
+
+```rust,no_run
+use hf_chat_template::{ChatTemplate, Message, TokenizerConfig};
+
+let jinja = std::fs::read_to_string("chat_template.jinja")?;
+let cfg: TokenizerConfig = serde_json::from_str(&std::fs::read_to_string("tokenizer_config.json")?)?;
+let tmpl = ChatTemplate::from_template_and_config(&jinja, &cfg)?;
+
+let prompt = tmpl.render_messages(&[Message::user("Hi")], true)?;
+# Ok::<(), Box<dyn std::error::Error>>(())
+```
+
 For tools, documents, or model-specific kwargs, build a [`RenderInput`]. For an arbitrary
 context, call `render_value` with a `minijinja::Value`.
 
@@ -72,12 +87,14 @@ These models render byte-identical to `transformers` in CI. See
 | SmolLM2 | ChatML |
 | Phi-3 | `<|user|>` / `<|end|>` markers |
 | Hermes-3-Llama-3.1 | named `tool_use` sub-template, Jinja macros and recursion |
+| LFM2 | standalone `chat_template.jinja` file, tool list (`tojson`) |
 
 ## Loading from the Hub
 
-The `hub` feature adds `from_hub`, which fetches a model's `tokenizer_config.json` and compiles
-its template in one call. It uses the synchronous `hf-hub` client with rustls, so there is no
-system OpenSSL dependency. Authentication follows `hf-hub`: the `HF_TOKEN` env var or the token
+The `hub` feature adds `from_hub`, which fetches a model's config and template and compiles it in
+one call. It loads `tokenizer_config.json`, plus a standalone `chat_template.jinja` when the model
+ships one (the standalone file wins over an inline `chat_template`, matching `transformers`). It
+uses the synchronous `hf-hub` client with rustls, so there is no system OpenSSL dependency. Authentication follows `hf-hub`: the `HF_TOKEN` env var or the token
 from `huggingface-cli login`, which gated repos need.
 
 ```toml

@@ -1,0 +1,2 @@
+<|startoftext|><|im_start|>user
+Capital of France?<|im_end|>

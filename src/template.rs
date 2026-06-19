@@ -52,6 +52,23 @@ impl ChatTemplate {
         ChatTemplate::builder_from_config(config)?.build()
     }
 
+    /// Compile from a standalone template string (the contents of a `chat_template.jinja` file),
+    /// injecting special tokens from a separately-loaded [`TokenizerConfig`].
+    ///
+    /// Newer `transformers` ship the chat template as its own `chat_template.jinja` file rather
+    /// than inside `tokenizer_config.json` (Gemma 3+, SmolLM3, …). The template body comes from
+    /// the file; the special tokens (`bos_token`, …) still come from the config. Matching the
+    /// `transformers` precedence, a standalone file overrides any inline `chat_template` field, so
+    /// this ignores `config.chat_template` entirely.
+    pub fn from_template_and_config(
+        template: &str,
+        config: &TokenizerConfig,
+    ) -> Result<Self, Error> {
+        ChatTemplate::builder(template)
+            .special_tokens_from(config)
+            .build()
+    }
+
     /// Start a builder to compile `source` with non-default options (clock, undefined policy…).
     pub fn builder(source: &str) -> ChatTemplateBuilder {
         ChatTemplateBuilder::new(BuilderSource::Raw(source.to_owned()), Vec::new())
@@ -72,8 +89,12 @@ impl ChatTemplate {
         ))
     }
 
-    /// Fetch `tokenizer_config.json` for a Hub repo (default branch) and compile its default
-    /// template, injecting the config's special tokens. Requires the `hub` feature.
+    /// Fetch a Hub repo (default branch) and compile its default chat template, injecting the
+    /// config's special tokens. Requires the `hub` feature.
+    ///
+    /// Loads `tokenizer_config.json`, plus a standalone `chat_template.jinja` if the repo ships
+    /// one (Gemma 3+, SmolLM3, …); the standalone file takes precedence over an inline
+    /// `chat_template` field, matching `transformers`.
     ///
     /// Authentication uses `hf-hub`'s discovery (the `HF_TOKEN` env var or the cached
     /// `huggingface-cli login` token); gated repos need a token with access. For a pinned
@@ -87,16 +108,26 @@ impl ChatTemplate {
     /// ```
     #[cfg(feature = "hub")]
     pub fn from_hub(repo_id: &str) -> Result<Self, Error> {
-        let config = crate::hub::fetch_config(repo_id, None)?;
-        ChatTemplate::from_tokenizer_config(&config)
+        Self::from_hub_inner(repo_id, None)
     }
 
     /// Like [`from_hub`](ChatTemplate::from_hub), but pins a specific `revision` (a branch,
     /// tag, or commit SHA). Requires the `hub` feature.
     #[cfg(feature = "hub")]
     pub fn from_hub_revision(repo_id: &str, revision: &str) -> Result<Self, Error> {
-        let config = crate::hub::fetch_config(repo_id, Some(revision))?;
-        ChatTemplate::from_tokenizer_config(&config)
+        Self::from_hub_inner(repo_id, Some(revision))
+    }
+
+    /// Shared `from_hub` body: fetch `tokenizer_config.json` plus a standalone
+    /// `chat_template.jinja` if the repo ships one, then compile with the `transformers`
+    /// precedence — a standalone file overrides any inline `chat_template` field.
+    #[cfg(feature = "hub")]
+    fn from_hub_inner(repo_id: &str, revision: Option<&str>) -> Result<Self, Error> {
+        let (config, standalone) = crate::hub::fetch_template_material(repo_id, revision)?;
+        match standalone {
+            Some(jinja) => ChatTemplate::from_template_and_config(&jinja, &config),
+            None => ChatTemplate::from_tokenizer_config(&config),
+        }
     }
 
     /// Render the typed input model to the final prompt string. Special tokens from the
@@ -221,6 +252,15 @@ impl ChatTemplateBuilder {
                 clock: Arc::new(SystemClock),
             },
         }
+    }
+
+    /// Inject special tokens (`bos_token`, …) from a parsed `tokenizer_config.json` into the
+    /// render context, replacing any already set. Use with [`ChatTemplate::builder`] when the
+    /// template source is a standalone `chat_template.jinja` but the tokens still live in the
+    /// config (see [`ChatTemplate::from_template_and_config`]).
+    pub fn special_tokens_from(mut self, config: &TokenizerConfig) -> Self {
+        self.special_tokens = config.special_tokens();
+        self
     }
 
     /// Select a named sub-template (e.g. `"tool_use"`, `"rag"`) when the config carries a
