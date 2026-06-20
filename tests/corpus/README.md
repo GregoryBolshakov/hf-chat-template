@@ -8,7 +8,8 @@ core guarantee; `tests/m3_corpus.rs` fails CI on any divergence.
 
 ```
 <model-slug>/
-  meta.json              model id, pinned revision (commit sha), license, source URL
+  meta.json              model id, pinned revision (commit sha), license, source URL,
+                         optional clock_unix_secs (pins strftime_now for date-stamped templates)
   tokenizer_config.json  trimmed config (chat_template if inline, + special tokens)
   chat_template.jinja    optional: standalone template, for models that ship one (not inline)
   cases/<name>.json      { "template_name": null | "<name>", "input": <RenderInput> }
@@ -30,6 +31,7 @@ Generated with **`transformers` 5.12.0** (Python 3.10, `jinja2` 3.1.6). Regenera
 | deepseek-llm-7b-chat | deepseek-ai/deepseek-llm-7b-chat | DeepSeek License Agreement | `afbda8b347ec` | 3 |
 | deepseek-r1-distill-qwen-7b | deepseek-ai/DeepSeek-R1-Distill-Qwen-7B | MIT | `916b56a44061` | 3 |
 | falcon-7b-instruct | tiiuae/falcon-7b-instruct | Apache-2.0 | `8782b5c5d8c9` | 3 |
+| granite-3.1-8b-instruct | ibm-granite/granite-3.1-8b-instruct | Apache-2.0 | `4009206d5fc9` | 3 |
 | hermes-3-llama-3.1-8b | NousResearch/Hermes-3-Llama-3.1-8B | Llama-3.1-Community | `896ea440e5a9` | 4 |
 | lfm2-1.2b | LiquidAI/LFM2-1.2B | LFM Open License v1.0 | `933cee00d754` | 4 |
 | mistral-7b-instruct-v0.3 | mistralai/Mistral-7B-Instruct-v0.3 | Apache-2.0 | `c170c708c41d` | 4 |
@@ -63,6 +65,12 @@ The 2026-06 breadth pass added the major ungated template families: Mistral `[IN
 (`qwq-32b`, `deepseek-r1-distill-qwen-7b`), DeepSeek `User:` / `Assistant:` (`deepseek-llm-7b-chat`),
 OpenChat's `.title()`-cased roles (`openchat-3.5-0106`), Zephyr `<|user|>` markers (`zephyr-7b-beta`),
 a ChatML variant (`yi-1.5-9b-chat`), and Falcon's `.strip()` / `.replace()` (`falcon-7b-instruct`).
-All are date-independent. Models that use `strftime_now` (Granite, Llama-3.1, Command-R) and the
-gated families (Llama-3.x, Gemma, Command-R) are still pending: the former on the `strftime`
-real-clock feature, the latter on an `HF_TOKEN` to fetch.
+
+`granite-3.1-8b-instruct` covers `strftime_now`: its no-system branch stamps
+`strftime_now('%B %d, %Y')`. `meta.json` sets `clock_unix_secs` (2024-07-04 UTC); the runner
+injects `FixedClock::from_unix_secs(clock_unix_secs)` and `gen_reference.py` freezes the same
+instant on the Python side (by swapping `transformers.utils.chat_template_utils.datetime`, not
+freezegun, whose `sys.modules` walk force-imports transformers' optional-dependency submodules and
+crashes). This proves the strftime specifiers byte-identically while staying reproducible. The
+remaining gap is the gated families (Llama-3.x, Gemma, Command-R), pending an `HF_TOKEN` to fetch
+(Llama-3.1 / Command-R also stamp dates, so they reuse the `clock_unix_secs` mechanism).

@@ -27,11 +27,13 @@ Byte-identical in CI:
 | HuggingFaceH4/zephyr-7b-beta | basic, no-system, single-user (`<\|user\|>` / `<\|assistant\|>`) |
 | 01-ai/Yi-1.5-9B-Chat | basic, no-system, single-user (ChatML variant) |
 | tiiuae/falcon-7b-instruct | basic, no-system, single-user (`.strip()` / `.replace()`) |
+| ibm-granite/granite-3.1-8b-instruct | `strftime_now` date stamp (clock pinned), with/without system |
 
-This is the ungated corpus: 15 models, 50 cases. It spans the major template families people run
+This is the ungated corpus: 16 models, 53 cases. It spans the major template families people run
 (Mistral `[INST]`, ChatML, DeepSeek, reasoning templates with `<think>` / `{% generation %}`,
-standalone `chat_template.jinja` layouts, and tool calling). Expanding to the gated families
-(Llama-3.x, Gemma, Command-R) requires a Hugging Face token to fetch and is in progress.
+`strftime_now` date stamping, standalone `chat_template.jinja` layouts, and tool calling).
+Expanding to the gated families (Llama-3.x, Gemma, Command-R) requires a Hugging Face token to
+fetch and is in progress.
 
 ## Jinja surface supported
 
@@ -45,7 +47,9 @@ Confirmed against real templates and the corpus:
 - **Loop variables**: `loop.index0`, `loop.last`, `loop.first`, `loop.previtem`, `loop.nextitem`.
 - **`raise_exception(msg)`** — surfaces as a distinct [`Error::TemplateRaised`], not an engine
   error, so you can tell "the template rejected this conversation" from "the library has a bug."
-- **`strftime_now(fmt)`** — via an injectable [`Clock`] (see caveat below).
+- **`strftime_now(fmt)`** — via an injectable [`Clock`]: the default `SystemClock` (UTC),
+  `LocalClock` (local time, the `strftime` feature), or `FixedClock` (pinned). The strftime
+  specifiers are proven byte-identical by the corpus (`granite-3.1-8b-instruct`, date pinned).
 - **`tojson`** — a custom filter matching Python `json.dumps(x, ensure_ascii=False)`: `", "` /
   `": "` separators and **insertion-ordered** keys (minijinja's built-in sorts keys and omits
   spaces). Honors `tojson(indent=N)`.
@@ -60,9 +64,10 @@ Confirmed against real templates and the corpus:
 ## Known divergences & caveats
 
 - **`strftime_now` defaults to UTC.** `SystemClock` reads `SystemTime` as UTC; `transformers`
-  uses Python local time. Templates that stamp the date (Llama-3.1, Command-R) will differ by
-  timezone unless you inject a `FixedClock`/custom `Clock`. The corpus deliberately pins dates
-  for any such model.
+  uses Python local time. Templates that stamp the date (Granite, Llama-3.1, Command-R) will differ
+  by timezone with the default clock. To match `transformers`, enable the `strftime` feature and
+  inject `LocalClock` (local time), or inject a `FixedClock` to pin a specific instant. The corpus
+  pins dates (`clock_unix_secs`) for date-stamped models so their references stay reproducible.
 - **Undefined variables are lenient by default** (`UndefinedBehavior::Lenient`), matching the
   common `transformers` behavior. Override via the builder if a template needs strict semantics.
 - **`pycompat` coverage is `minijinja-contrib`'s set.** An exotic Python method a template relies

@@ -92,8 +92,9 @@ These models render byte-identical to `transformers` in CI. See
 | OpenChat-3.5, Zephyr, Yi-1.5, Falcon | varied prompt formats, pycompat methods |
 | LFM2 | standalone `chat_template.jinja` file, tool list (`tojson`) |
 | SmolLM3 | standalone file, `{% generation %}` reasoning block |
+| Granite-3.1 | `strftime_now` date stamp (clock pinned for a reproducible match) |
 
-Fifteen models, fifty cases, all byte-identical in CI.
+Sixteen models, fifty-three cases, all byte-identical in CI.
 
 ## Loading from the Hub
 
@@ -149,14 +150,19 @@ TLS stack that the core string-rendering path does not need.
 `tokenizers` is off by default. It adds `render_and_encode` and re-exports `tokenizers`, pulling
 in that crate and its `onig` regex backend.
 
+`strftime` is off by default. It adds `LocalClock`, a `strftime_now` clock that reads local wall
+time to match `transformers`, pulling in `chrono`. The default `SystemClock` is UTC and needs no
+extra dependency.
+
 ## Caveats
 
 This crate does not add or strip a BOS token. If a template emits `{{ bos_token }}`, set
 `add_special_tokens = false` at encode time so the tokenizer does not add BOS a second time. It
 renders what the template says.
 
-`strftime_now` defaults to UTC, while `transformers` uses local time. Inject a `FixedClock` or
-your own `Clock` to match a specific reference.
+`strftime_now` defaults to UTC, while `transformers` uses local time. Enable the `strftime`
+feature and inject `LocalClock` to match local time, or inject a `FixedClock` to pin a specific
+date.
 
 ## License
 

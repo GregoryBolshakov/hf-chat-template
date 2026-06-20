@@ -152,8 +152,9 @@ impl Civil {
 /// Real wall-clock (UTC). Dependency-free: reads `SystemTime` and does the calendar math here.
 ///
 /// Note: this is UTC, not local time. transformers uses local time via Python's `datetime.now()`.
-/// For reproducible/server use UTC is usually preferable; pin a [`FixedClock`] when you need
-/// to match a specific reference exactly.
+/// For reproducible/server use UTC is usually preferable; use [`LocalClock`] (the `strftime`
+/// feature) to match Python's local-time behavior, or pin a [`FixedClock`] to match a specific
+/// reference exactly.
 #[derive(Clone, Copy, Debug, Default)]
 pub struct SystemClock;
 
@@ -202,5 +203,80 @@ impl FixedClock {
 impl Clock for FixedClock {
     fn strftime(&self, format: &str) -> String {
         Civil::from_unix_secs(self.unix_secs).strftime(format)
+    }
+}
+
+/// Real wall-clock in the **local** timezone, matching Python's `datetime.now()` (which is what
+/// `transformers` uses for `strftime_now`). Requires the `strftime` feature.
+///
+/// [`SystemClock`] is UTC and dependency-free; this reads the local timezone offset via `chrono`
+/// (the only thing we borrow from it — formatting still goes through our own strftime, so the
+/// supported specifiers and their output are identical to the other clocks). Construct it and pass
+/// it to [`ChatTemplateBuilder::clock`](crate::ChatTemplateBuilder::clock) when you need rendered
+/// dates to match what `transformers` would emit on the same machine:
+///
+/// ```
+/// # #[cfg(feature = "strftime")] {
+/// use hf_chat_template::{ChatTemplate, LocalClock};
+/// let tmpl = ChatTemplate::builder("Today: {{ strftime_now('%Y') }}")
+///     .clock(LocalClock)
+///     .build()
+///     .unwrap();
+/// # }
+/// ```
+#[cfg(feature = "strftime")]
+#[derive(Clone, Copy, Debug, Default)]
+pub struct LocalClock;
+
+#[cfg(feature = "strftime")]
+impl Clock for LocalClock {
+    fn strftime(&self, format: &str) -> String {
+        use chrono::{Datelike, Local, Timelike};
+        let now = Local::now();
+        let civil = Civil {
+            year: now.year() as i64,
+            month: now.month(),
+            day: now.day(),
+            hour: now.hour(),
+            min: now.minute(),
+            sec: now.second(),
+            // chrono: 0 = Sunday .. 6 = Saturday, matching our Civil convention.
+            weekday: now.weekday().num_days_from_sunday(),
+            yday: now.ordinal(), // chrono ordinal is 1-based, as is Civil::yday.
+        };
+        civil.strftime(format)
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn fixed_clock_formats_a_known_date() {
+        // 2024-07-04 00:00:00 UTC. Exercises the specifiers Granite-style templates use.
+        let clk = FixedClock::from_ymd(2024, 7, 4).unwrap();
+        assert_eq!(clk.strftime("%B %d, %Y"), "July 04, 2024");
+        assert_eq!(clk.strftime("%Y-%m-%d"), "2024-07-04");
+        assert_eq!(clk.strftime("%A"), "Thursday");
+    }
+
+    // LocalClock delegates to the local timezone; verify the wiring reads local wall time and maps
+    // chrono's fields onto Civil correctly (not, say, UTC or an off-by-one weekday/ordinal). We
+    // compare the date-portion against a fresh chrono::Local::now() taken in the test; the only
+    // race is the midnight boundary, which we tolerate by allowing either side of it.
+    #[cfg(feature = "strftime")]
+    #[test]
+    fn local_clock_reads_local_time() {
+        use chrono::{Datelike, Local};
+        let got = LocalClock.strftime("%Y-%m-%d");
+        let now = Local::now();
+        let same = format!("{:04}-{:02}-{:02}", now.year(), now.month(), now.day());
+        let prev = (now - chrono::Duration::days(1)).date_naive();
+        let prev = format!("{:04}-{:02}-{:02}", prev.year(), prev.month(), prev.day());
+        assert!(
+            got == same || got == prev,
+            "LocalClock date {got} matched neither {same} nor {prev}"
+        );
     }
 }

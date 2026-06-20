@@ -14,12 +14,22 @@ use std::fs;
 use std::path::{Path, PathBuf};
 
 use hf_chat_template::{
-    ChatTemplate, ChatTemplateBuilder, Error, Message, RenderInput, TokenizerConfig,
+    ChatTemplate, ChatTemplateBuilder, Error, FixedClock, Message, RenderInput, TokenizerConfig,
 };
 use serde::Deserialize;
 
 fn corpus_dir() -> PathBuf {
     Path::new(env!("CARGO_MANIFEST_DIR")).join("tests/corpus")
+}
+
+/// A model's `meta.json` may pin `strftime_now` to a fixed instant so date-stamped templates
+/// (Granite, Llama-3.1, …) produce byte-stable golden output. The reference is generated with the
+/// same instant frozen on the Python side (see `tools/gen_reference.py`). Returns the Unix seconds
+/// if pinned, so the runner can inject a matching [`FixedClock`].
+fn clock_pin(dir: &Path) -> Option<i64> {
+    let raw = fs::read_to_string(dir.join("meta.json")).ok()?;
+    let v: serde_json::Value = serde_json::from_str(&raw).ok()?;
+    v.get("clock_unix_secs")?.as_i64()
 }
 
 /// Build a [`ChatTemplateBuilder`] for a model dir, supporting both template layouts: an inline
@@ -28,13 +38,17 @@ fn corpus_dir() -> PathBuf {
 /// body while special tokens still come from the config (matching `transformers`).
 fn builder_for(dir: &Path, cfg: &TokenizerConfig) -> Result<ChatTemplateBuilder, Error> {
     let jinja = dir.join("chat_template.jinja");
-    if jinja.exists() {
+    let mut builder = if jinja.exists() {
         let src =
             fs::read_to_string(&jinja).unwrap_or_else(|e| panic!("read {}: {e}", jinja.display()));
-        Ok(ChatTemplate::builder(&src).special_tokens_from(cfg))
+        ChatTemplate::builder(&src).special_tokens_from(cfg)
     } else {
-        ChatTemplate::builder_from_config(cfg)
+        ChatTemplate::builder_from_config(cfg)?
+    };
+    if let Some(secs) = clock_pin(dir) {
+        builder = builder.clock(FixedClock::from_unix_secs(secs));
     }
+    Ok(builder)
 }
 
 /// One corpus case: the typed render input plus an optional named-template selection.

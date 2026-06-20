@@ -1,0 +1,8 @@
+{
+  "model_id": "ibm-granite/granite-3.1-8b-instruct",
+  "revision": "4009206d5fc95d2e65a7b7633e159d6e97e25d35",
+  "license": "Apache-2.0",
+  "source": "https://huggingface.co/ibm-granite/granite-3.1-8b-instruct",
+  "clock_unix_secs": 1720051200,
+  "note": "strftime_now('%B %d, %Y') date stamp in the no-system branch. clock_unix_secs pins the date (2024-07-04 UTC) so the reference is reproducible; the Rust runner injects FixedClock::from_unix_secs(clock_unix_secs)."
+}

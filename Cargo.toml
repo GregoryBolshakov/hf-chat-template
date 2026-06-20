@@ -1,6 +1,6 @@
 [package]
 name = "hf-chat-template"
-version = "0.1.6"
+version = "0.1.7"
 edition = "2021"
 description = "Render Hugging Face chat_template (Jinja2) prompts byte-identically to transformers.apply_chat_template."
 license = "MIT OR Apache-2.0"
@@ -36,6 +36,10 @@ hub = ["dep:hf-hub"]
 # `render_and_encode(input, &tokenizers::Tokenizer)`: render, then tokenize to IDs in one step.
 # Off by default — the `tokenizers` crate is large and most callers tokenize separately.
 tokenizers = ["dep:tokenizers"]
+# `LocalClock`: a `strftime_now` clock reading local wall time, matching Python's
+# `datetime.now()` (transformers' behavior). Off by default — the dependency-free `SystemClock`
+# is UTC; this adds `chrono` to determine the local timezone. See the `strftime_now` caveat.
+strftime = ["dep:chrono"]
 
 [dependencies]
 minijinja = { version = "2.20", features = ["json", "loop_controls", "preserve_order"] }
@@ -50,6 +54,10 @@ tokenizers = { version = "0.23", default-features = false, features = ["onig"], 
 # preserve_order: the typed render path builds a serde_json::Value context; without this,
 # object keys sort alphabetically and tool-call prompts diverge from the transformers reference.
 serde_json = { version = "1.0.150", features = ["preserve_order"] }
+# Local-timezone clock for the `strftime` feature. default-features off keeps only `clock`
+# (the part that resolves the local offset); we reuse our own strftime formatter, so chrono's
+# formatting/serde/wasm pieces aren't needed.
+chrono = { version = "0.4", default-features = false, features = ["clock"], optional = true }
 
 [dev-dependencies]
 serde_json = { version = "1.0.150", features = ["preserve_order"] }

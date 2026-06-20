@@ -28,6 +28,8 @@ from __future__ import annotations
 
 import json
 import sys
+from contextlib import contextmanager
+from datetime import datetime, timezone
 from pathlib import Path
 
 import transformers
@@ -58,17 +60,48 @@ def render_case(tok, case: dict) -> str:
     return tok.apply_chat_template(inp["messages"], **kwargs)
 
 
+@contextmanager
+def clock_freeze(meta: dict):
+    """If the model pins ``clock_unix_secs``, freeze ``strftime_now`` to that instant so date-stamped
+    templates are reproducible. transformers' ``strftime_now`` is a closure calling ``datetime.now()``
+    bound to ``chat_template_utils.datetime`` (``utils/chat_template_utils.py``), so we swap just that
+    one attribute — robust, and it avoids freezegun's sys.modules walk (which force-imports
+    transformers' lazy, optional-dependency submodules and crashes). The instant is the UTC civil
+    time of the Unix seconds, which the Rust runner reproduces with ``FixedClock::from_unix_secs``
+    (also UTC), keeping both sides byte-identical."""
+    secs = meta.get("clock_unix_secs")
+    if secs is None:
+        yield
+        return
+    from transformers.utils import chat_template_utils as ctu
+
+    frozen = datetime.fromtimestamp(secs, tz=timezone.utc).replace(tzinfo=None)
+    real = ctu.datetime
+
+    class _FrozenDateTime(real):
+        @classmethod
+        def now(cls, tz=None):
+            return frozen if tz is None else frozen.replace(tzinfo=tz)
+
+    ctu.datetime = _FrozenDateTime
+    try:
+        yield
+    finally:
+        ctu.datetime = real
+
+
 def gen_model(mdir: Path) -> None:
     meta = json.loads((mdir / "meta.json").read_text())
     tok = AutoTokenizer.from_pretrained(meta["model_id"], revision=meta.get("revision"))
     out_dir = mdir / "expected"
     out_dir.mkdir(exist_ok=True)
-    for case_file in sorted((mdir / "cases").glob("*.json")):
-        case = json.loads(case_file.read_text())
-        rendered = render_case(tok, case)
-        # Write exact bytes; .gitattributes marks these files -text so git won't normalize them.
-        (out_dir / f"{case_file.stem}.txt").write_text(rendered, encoding="utf-8", newline="")
-        print(f"  {mdir.name}/{case_file.stem}: {len(rendered)} chars")
+    with clock_freeze(meta):
+        for case_file in sorted((mdir / "cases").glob("*.json")):
+            case = json.loads(case_file.read_text())
+            rendered = render_case(tok, case)
+            # Write exact bytes; .gitattributes marks these files -text so git won't normalize them.
+            (out_dir / f"{case_file.stem}.txt").write_text(rendered, encoding="utf-8", newline="")
+            print(f"  {mdir.name}/{case_file.stem}: {len(rendered)} chars")
 
 
 def main() -> None:

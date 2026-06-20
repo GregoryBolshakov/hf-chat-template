@@ -39,6 +39,8 @@ mod json;
 mod model;
 mod template;
 
+#[cfg(feature = "strftime")]
+pub use clock::LocalClock;
 pub use clock::{Clock, FixedClock, SystemClock};
 pub use config::{ChatTemplateField, NamedTemplate, TokenField, TokenizerConfig};
 pub use error::Error;
