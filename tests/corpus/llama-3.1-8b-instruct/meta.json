@@ -1,0 +1,7 @@
+{
+  "model_id": "meta-llama/Llama-3.1-8B-Instruct",
+  "revision": "0e9e39f249a16976918f6564b8830bc894c89659",
+  "license": "Llama-3.1-Community",
+  "source": "https://huggingface.co/meta-llama/Llama-3.1-8B-Instruct",
+  "note": "Date is a `date_string` template variable (defaults to '26 Jul 2024'), not strftime_now; cases pass date_string explicitly so output is deterministic without clock pinning."
+}

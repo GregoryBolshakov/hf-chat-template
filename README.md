@@ -84,6 +84,7 @@ These models render byte-identical to `transformers` in CI. See
 | Model | Notes |
 |---|---|
 | Qwen2.5, Qwen3, QwQ-32B | ChatML, tool calling (`tojson`), reasoning |
+| Llama-3.1 | `<\|start_header_id\|>` format, tools in the user turn, `date_string` |
 | SmolLM2 | ChatML |
 | Phi-3 | `<\|user\|>` / `<\|end\|>` markers |
 | Hermes-3-Llama-3.1 | named `tool_use` sub-template, Jinja macros and recursion |
@@ -96,7 +97,7 @@ These models render byte-identical to `transformers` in CI. See
 | Gemma-2, Gemma-3 | `<start_of_turn>` format, no system role (Gemma-2), system merge and content parts (Gemma-3) |
 | Command-R | named `default` / `tool_use` / `rag` templates, Jinja macros and recursion |
 
-Nineteen models, sixty-four cases, all byte-identical in CI.
+Twenty models, sixty-eight cases, all byte-identical in CI.
 
 ## Loading from the Hub
 

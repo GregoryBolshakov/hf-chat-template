@@ -31,13 +31,13 @@ Byte-identical in CI:
 | google/gemma-2-9b-it | `<start_of_turn>` format, no-system (raises on system role), multi-turn |
 | google/gemma-3-4b-it | `<start_of_turn>`, system merged into the first turn, string/parts content |
 | CohereForAI/c4ai-command-r-v01 | named `default` / `tool_use` / `rag` templates (macros, recursion) |
+| meta-llama/Llama-3.1-8B-Instruct | `<\|start_header_id\|>` format, tools in the user turn, `date_string` |
 
-This is the corpus: 19 models, 64 cases. It spans the major template families people run
+This is the corpus: 20 models, 68 cases. It spans the major template families people run
 (Mistral `[INST]`, ChatML, DeepSeek, Gemma `<start_of_turn>`, Command-R, reasoning templates with
 `<think>` / `{% generation %}`, `strftime_now` date stamping, standalone `chat_template.jinja`
-layouts, named `tool_use` / `rag` templates, and tool calling). It includes gated marquee models
-(Gemma-2, Gemma-3, Command-R). Llama-3.x is pending Hugging Face access approval and will be added
-once granted.
+layouts, named `tool_use` / `rag` templates, and tool calling). It includes the gated marquee models
+(Llama-3.1, Gemma-2, Gemma-3, Command-R).
 
 ## Jinja surface supported
 

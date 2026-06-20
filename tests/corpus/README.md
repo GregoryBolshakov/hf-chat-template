@@ -37,6 +37,7 @@ Generated with **`transformers` 5.12.0** (Python 3.10, `jinja2` 3.1.6). Regenera
 | granite-3.1-8b-instruct | ibm-granite/granite-3.1-8b-instruct | Apache-2.0 | `4009206d5fc9` | 3 |
 | hermes-3-llama-3.1-8b | NousResearch/Hermes-3-Llama-3.1-8B | Llama-3.1-Community | `896ea440e5a9` | 4 |
 | lfm2-1.2b | LiquidAI/LFM2-1.2B | LFM Open License v1.0 | `933cee00d754` | 4 |
+| llama-3.1-8b-instruct | meta-llama/Llama-3.1-8B-Instruct | Llama-3.1-Community | `0e9e39f249a1` | 4 |
 | mistral-7b-instruct-v0.3 | mistralai/Mistral-7B-Instruct-v0.3 | Apache-2.0 | `c170c708c41d` | 4 |
 | openchat-3.5-0106 | openchat/openchat-3.5-0106 | Apache-2.0 | `ff058fda4972` | 3 |
 | phi-3-mini-4k-instruct | microsoft/Phi-3-mini-4k-instruct | MIT | `f39ac1d28e92` | 3 |
@@ -81,6 +82,7 @@ The 2026-06 gated pass added marquee models that need a token and accepted licen
 `gemma-2-9b-it` (`<start_of_turn>`, raises on a system role), `gemma-3-4b-it` (system merged into
 the first turn, string-or-parts content), and `command-r-v01` (named `default` / `tool_use` / `rag`
 templates with Jinja macros and recursion; the `tool_use` case uses Cohere's native
-`parameter_definitions` tool format, the `rag` case passes `documents`). Llama-3.x is pending
-Hugging Face access approval; when granted it slots in the same way (Llama-3.1 stamps the date, so
-it reuses `clock_unix_secs`).
+`parameter_definitions` tool format, the `rag` case passes `documents`). `llama-3.1-8b-instruct` adds the
+`<|start_header_id|>` format with tools rendered into the user turn; its date comes from a
+`date_string` template variable (default `26 Jul 2024`, not `strftime_now`), so the cases pass
+`date_string` explicitly and need no clock pinning.
