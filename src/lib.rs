@@ -28,6 +28,7 @@
 //! second time. This crate renders exactly what the template says and never strips silently.
 
 #![forbid(unsafe_code)]
+#![deny(missing_docs)]
 
 mod clock;
 mod config;

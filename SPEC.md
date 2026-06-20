@@ -272,6 +272,11 @@ force ours — an accepted, documented coupling (the engine is intrinsic to what
 path to a stable `1.0` (corpus breadth and the `strftime_now` divergence) is tracked outside this
 spec.
 
+MSRV: declared via `rust-version` in `Cargo.toml` and enforced in CI by building `--all-features
+--locked` on that toolchain. The floor is set by the dependency tree, not this crate's own source.
+Raising it is treated as a breaking change. The current value is in `Cargo.toml`; CI is the source
+of truth.
+
 ## 11. Documentation
 
 Crate-level docs carry the quickstart, the boundary statement ("we emit a string; you tokenize"),

@@ -1,0 +1,50 @@
+# cargo-deny configuration. Run with `cargo deny check`. Enforced in CI.
+# Guards the dependency tree for production trust: license compatibility, security advisories,
+# and dependency-source sanity. Kept deliberately strict so a problematic transitive dep is a
+# CI failure, not a surprise for an adopter.
+
+[graph]
+# Check the full feature surface, since optional features (hub, strftime) pull extra deps.
+all-features = true
+
+[advisories]
+version = 2
+# Fail on any security advisory or unmaintained/yanked crate. No ignores today; add a specific
+# RUSTSEC id with a justification comment here only when a fix is genuinely unavailable.
+yanked = "deny"
+ignore = []
+
+[licenses]
+version = 2
+# Allow only OSI-permissive licenses compatible with this crate's MIT OR Apache-2.0 licensing.
+# A copyleft (GPL/MPL/...) transitive dep should fail the build and force a conscious decision.
+allow = [
+    "MIT",
+    "Apache-2.0",
+    "Apache-2.0 WITH LLVM-exception",
+    "BSD-2-Clause",
+    "BSD-3-Clause",
+    "ISC",
+    "Unicode-3.0",
+    "Zlib",
+    # webpki-roots (the Mozilla CA bundle, pulled by ureq under the `hub` feature) ships the CA
+    # data under CDLA-Permissive-2.0. It is a permissive data license with no copyleft terms.
+    "CDLA-Permissive-2.0",
+    # option-ext (transitive via dirs -> hf-hub, only under the `hub` feature) is MPL-2.0. MPL's
+    # copyleft is file-scoped to that crate's own sources; depending on it imposes no obligations
+    # on this crate or on adopters. Accepted as a transitive dev/optional dependency.
+    "MPL-2.0",
+]
+# Crates that ship no SPDX expression but are known-permissive can be confirmed individually here.
+confidence-threshold = 0.8
+
+[bans]
+# Surface accidental dependency bloat: multiple versions of the same crate are a warning, not a
+# hard fail (transitive duplicates happen), but they stay visible.
+multiple-versions = "warn"
+wildcards = "deny"
+
+[sources]
+# Only crates.io. A git or unknown-registry dependency must be an explicit, reviewed choice.
+unknown-registry = "deny"
+unknown-git = "deny"

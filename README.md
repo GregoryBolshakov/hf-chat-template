@@ -145,6 +145,11 @@ TLS stack that the core string-rendering path does not need.
 time to match `transformers`, pulling in `chrono`. The default `SystemClock` is UTC and needs no
 extra dependency.
 
+## Minimum supported Rust version
+
+The MSRV is declared in `Cargo.toml` (`rust-version`) and checked in CI. Raising it is treated as
+a breaking change. It tracks what the dependency tree requires, not this crate's own code.
+
 ## Caveats
 
 This crate does not add or strip a BOS token. If a template emits `{{ bos_token }}`, set

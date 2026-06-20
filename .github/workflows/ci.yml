@@ -34,3 +34,24 @@ jobs:
         run: cargo test --doc
       - name: build (no default features)
         run: cargo build --no-default-features
+
+  msrv:
+    name: msrv (1.85)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # Pinned to the declared rust-version in Cargo.toml. Uses the committed Cargo.lock
+      # (--locked) so the floor is reproducible and not silently raised by a dependency bump.
+      - uses: dtolnay/rust-toolchain@1.85.0
+      - uses: Swatinem/rust-cache@v2
+      - name: build (all features, locked)
+        run: cargo build --all-features --locked
+
+  deny:
+    name: cargo-deny
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: EmbarkStudios/cargo-deny-action@v2
+        with:
+          command: check
