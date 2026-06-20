@@ -31,10 +31,6 @@ pub enum Error {
     /// `hf-hub` error type is deliberately kept out of our public API.
     #[cfg(feature = "hub")]
     Hub(String),
-    /// The rendered prompt failed to tokenize. Only present with the `tokenizers` feature.
-    /// Carries the underlying message; the `tokenizers` error type is kept out of our public API.
-    #[cfg(feature = "tokenizers")]
-    Tokenize(String),
 }
 
 impl fmt::Display for Error {
@@ -48,8 +44,6 @@ impl fmt::Display for Error {
             Error::Config(m) => write!(f, "invalid chat-template config: {m}"),
             #[cfg(feature = "hub")]
             Error::Hub(m) => write!(f, "failed to fetch from the Hugging Face Hub: {m}"),
-            #[cfg(feature = "tokenizers")]
-            Error::Tokenize(m) => write!(f, "failed to tokenize the rendered prompt: {m}"),
         }
     }
 }

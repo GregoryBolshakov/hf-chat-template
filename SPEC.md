@@ -38,13 +38,13 @@ Optional, feature-gated (off by default):
 
 - `hub`: fetch a model's template from the Hugging Face Hub (`from_hub`) — `tokenizer_config.json`
   plus a standalone `chat_template.jinja` when the repo ships one.
-- `tokenizers`: render then encode to token IDs (`render_and_encode`).
 - `strftime`: `LocalClock`, a `strftime_now` clock reading local wall time to match
   `transformers`' `datetime.now()` (the default `SystemClock` is UTC). Adds `chrono`.
 
-Out of scope: inference, sampling, model loading, and authoring or editing templates. The crate
-renders a string; turning it into token IDs is the caller's job (the `tokenizers` feature is a
-convenience, not a core dependency).
+Out of scope: inference, sampling, model loading, tokenizing, and authoring or editing templates.
+The crate renders a string; turning it into token IDs is the caller's job, with their own tokenizer
+crate at their own version. This is deliberate: not depending on a tokenizer (notably `tokenizers`,
+which is `0.x` with breaking minors) keeps the crate conflict-free to add to any dependency tree.
 
 ## 3. Background: why this is hard
 
@@ -99,14 +99,12 @@ Features:
 ```toml
 [features]
 default = ["pycompat"]
-pycompat   = ["dep:minijinja-contrib"]  # Python methods on values; opt out for minimal builds
-hub        = ["dep:hf-hub"]             # from_hub / from_hub_revision
-tokenizers = ["dep:tokenizers"]         # render_and_encode
-strftime   = ["dep:chrono"]             # LocalClock (local-time strftime_now)
+pycompat = ["dep:minijinja-contrib"]  # Python methods on values; opt out for minimal builds
+hub      = ["dep:hf-hub"]             # from_hub / from_hub_revision
+strftime = ["dep:chrono"]             # LocalClock (local-time strftime_now)
 ```
 
-`hf-hub` is pulled sync-only (ureq, rustls, no system OpenSSL). `tokenizers` is pulled
-default-features-off with only the `onig` regex backend. `chrono` is pulled
+`hf-hub` is pulled sync-only (ureq, rustls, no system OpenSSL). `chrono` is pulled
 default-features-off with only `clock` (the local-offset lookup); formatting reuses the crate's
 own strftime, so `chrono`'s formatting/serde pieces are not linked. The "just render a string"
 path stays dependency-light so the crate is cheap to depend on.
@@ -139,9 +137,10 @@ Rendering:
 - `render_value(minijinja::Value) -> Result<String, Error>` — escape hatch for contexts the typed
   model doesn't cover. Does not inject special tokens. Exposing `minijinja::Value` ties this entry
   point to minijinja's major version (section 9).
-- `render_and_encode(&RenderInput, &tokenizers::Tokenizer) -> Result<(String, Vec<u32>), Error>` —
-  `tokenizers` feature. Encodes with `add_special_tokens = false` because the template already
-  emits the model's special tokens (matches `apply_chat_template(tokenize=True)`).
+
+There is intentionally no encode/tokenize method: the caller tokenizes the returned string with
+their own tokenizer (with `add_special_tokens = false`, since the template already emits the
+special tokens). See section 10 for why the crate takes no tokenizer dependency.
 
 Input model (`serde`-(de)serializable, so request JSON deserializes straight in):
 
@@ -172,11 +171,10 @@ One `#[non_exhaustive] enum Error`:
 - `Render(minijinja::Error)` — render-time error (undefined, type, unknown method).
 - `Config(String)` — no usable `chat_template`, a missing named template, or a bad shape.
 - `Hub(String)` — `hub` feature; fetch failure (network, auth, missing file).
-- `Tokenize(String)` — `tokenizers` feature; encode failure.
 
 Underlying `minijinja::Error` (line/span) is preserved via `source()`. The crate never panics on
-user input; every fallible path returns `Result`. `Hub`/`Tokenize` carry strings so the upstream
-error types stay out of the public API.
+user input; every fallible path returns `Result`. `Hub` carries a string so the upstream error
+type stays out of the public API.
 
 ## 7. Jinja compatibility layer
 
@@ -262,11 +260,17 @@ SemVer. Pre-1.0 (`0.x`) while the corpus and API settle; `from_str`, `from_token
 `render` are treated as stable from `0.1`. The public surface is kept minimal — every exposed
 type is a future compatibility obligation.
 
-`minijinja` is re-exported (`pub use minijinja`) so downstreams construct `Value` without a
-version-skew guess; `render_value` ties our API to minijinja's major version. With the
-`tokenizers` feature, `tokenizers` is likewise re-exported and `render_and_encode` ties to its
-version. The path to a stable `1.0` (including resolving these couplings, corpus breadth, and the
-`strftime_now` divergence) is tracked outside this spec.
+The crate takes no tokenizer dependency and exposes no tokenizer type, so nothing in the public
+API is tied to `tokenizers` (a `0.x` crate whose minors break). This is deliberate: a forced
+`tokenizers` version would conflict in the dependency trees of the inference stacks this crate aims
+to be a dependency of, and they already tokenize themselves. Tokenizing is the caller's job.
+
+The one remaining third-party type in the API is `minijinja::Value`, re-exported (`pub use
+minijinja`) so downstreams construct it without a version-skew guess; `render_value` ties that one
+entry point to minijinja's major version. minijinja is `1.0+`, so only a minijinja major bump would
+force ours — an accepted, documented coupling (the engine is intrinsic to what the crate does). The
+path to a stable `1.0` (corpus breadth and the `strftime_now` divergence) is tracked outside this
+spec.
 
 ## 11. Documentation
 
