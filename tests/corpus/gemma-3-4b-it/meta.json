@@ -1,0 +1,6 @@
+{
+  "model_id": "google/gemma-3-4b-it",
+  "revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+  "license": "Gemma Terms of Use",
+  "source": "https://huggingface.co/google/gemma-3-4b-it"
+}

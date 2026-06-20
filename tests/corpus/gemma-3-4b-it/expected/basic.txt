@@ -1,0 +1,9 @@
+<bos><start_of_turn>user
+You are terse.
+
+Hello!<end_of_turn>
+<start_of_turn>model
+Hi.<end_of_turn>
+<start_of_turn>user
+What is 2+2?<end_of_turn>
+<start_of_turn>model

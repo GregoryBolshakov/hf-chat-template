@@ -1,0 +1,28 @@
+{
+  "template_name": null,
+  "input": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "Hi"
+      },
+      {
+        "role": "assistant",
+        "content": "Hello! How can I help?"
+      },
+      {
+        "role": "user",
+        "content": "Tell me a joke."
+      },
+      {
+        "role": "assistant",
+        "content": "A chicken joke."
+      },
+      {
+        "role": "user",
+        "content": "Why?"
+      }
+    ],
+    "add_generation_prompt": true
+  }
+}

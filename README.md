@@ -93,8 +93,10 @@ These models render byte-identical to `transformers` in CI. See
 | LFM2 | standalone `chat_template.jinja` file, tool list (`tojson`) |
 | SmolLM3 | standalone file, `{% generation %}` reasoning block |
 | Granite-3.1 | `strftime_now` date stamp (clock pinned for a reproducible match) |
+| Gemma-2, Gemma-3 | `<start_of_turn>` format, no system role (Gemma-2), system merge and content parts (Gemma-3) |
+| Command-R | named `default` / `tool_use` / `rag` templates, Jinja macros and recursion |
 
-Sixteen models, fifty-three cases, all byte-identical in CI.
+Nineteen models, sixty-four cases, all byte-identical in CI.
 
 ## Loading from the Hub
 

@@ -157,9 +157,11 @@ fn corpus_matches_transformers_reference() {
 /// against a generic conversation, even before/without a committed reference.
 #[test]
 fn every_real_template_compiles_and_renders() {
+    // No system message: some templates legitimately reject the system role (Gemma raises
+    // "System role not supported"). A user/assistant/user conversation is the universal smoke
+    // input every template accepts; per-model system handling is covered by the byte-exact cases.
     let basic = RenderInput {
         messages: vec![
-            Message::new("system", "You are terse."),
             Message::new("user", "Hello!"),
             Message::new("assistant", "Hi."),
             Message::new("user", "What is 2+2?"),

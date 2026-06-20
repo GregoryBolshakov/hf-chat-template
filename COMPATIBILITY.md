@@ -28,12 +28,16 @@ Byte-identical in CI:
 | 01-ai/Yi-1.5-9B-Chat | basic, no-system, single-user (ChatML variant) |
 | tiiuae/falcon-7b-instruct | basic, no-system, single-user (`.strip()` / `.replace()`) |
 | ibm-granite/granite-3.1-8b-instruct | `strftime_now` date stamp (clock pinned), with/without system |
+| google/gemma-2-9b-it | `<start_of_turn>` format, no-system (raises on system role), multi-turn |
+| google/gemma-3-4b-it | `<start_of_turn>`, system merged into the first turn, string/parts content |
+| CohereForAI/c4ai-command-r-v01 | named `default` / `tool_use` / `rag` templates (macros, recursion) |
 
-This is the ungated corpus: 16 models, 53 cases. It spans the major template families people run
-(Mistral `[INST]`, ChatML, DeepSeek, reasoning templates with `<think>` / `{% generation %}`,
-`strftime_now` date stamping, standalone `chat_template.jinja` layouts, and tool calling).
-Expanding to the gated families (Llama-3.x, Gemma, Command-R) requires a Hugging Face token to
-fetch and is in progress.
+This is the corpus: 19 models, 64 cases. It spans the major template families people run
+(Mistral `[INST]`, ChatML, DeepSeek, Gemma `<start_of_turn>`, Command-R, reasoning templates with
+`<think>` / `{% generation %}`, `strftime_now` date stamping, standalone `chat_template.jinja`
+layouts, named `tool_use` / `rag` templates, and tool calling). It includes gated marquee models
+(Gemma-2, Gemma-3, Command-R). Llama-3.x is pending Hugging Face access approval and will be added
+once granted.
 
 ## Jinja surface supported
 

@@ -1,0 +1,11 @@
+<bos><start_of_turn>user
+Hi<end_of_turn>
+<start_of_turn>model
+Hello! How can I help?<end_of_turn>
+<start_of_turn>user
+Tell me a joke.<end_of_turn>
+<start_of_turn>model
+A chicken joke.<end_of_turn>
+<start_of_turn>user
+Why?<end_of_turn>
+<start_of_turn>model

@@ -1,0 +1,25 @@
+{
+  "template_name": "tool_use",
+  "input": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What's the weather in Paris?"
+      }
+    ],
+    "add_generation_prompt": true,
+    "tools": [
+      {
+        "name": "get_weather",
+        "description": "Get the current weather for a city.",
+        "parameter_definitions": {
+          "city": {
+            "description": "City name",
+            "type": "str",
+            "required": true
+          }
+        }
+      }
+    ]
+  }
+}

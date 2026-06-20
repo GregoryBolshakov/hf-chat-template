@@ -1,0 +1,6 @@
+{
+  "model_id": "CohereForAI/c4ai-command-r-v01",
+  "revision": "760ddb6c203d87ebdbe3c9785b49570e1bf95585",
+  "license": "CC-BY-NC-4.0",
+  "source": "https://huggingface.co/CohereForAI/c4ai-command-r-v01"
+}

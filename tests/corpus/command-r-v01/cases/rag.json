@@ -1,0 +1,18 @@
+{
+  "template_name": "rag",
+  "input": {
+    "messages": [
+      {
+        "role": "user",
+        "content": "What's the capital of France?"
+      }
+    ],
+    "add_generation_prompt": true,
+    "documents": [
+      {
+        "title": "France",
+        "text": "Paris is the capital and largest city of France."
+      }
+    ]
+  }
+}
